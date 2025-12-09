@@ -15,7 +15,7 @@ interface Exercise {
     secondary: string;
     tertiary: string;
   };
-}
+} 
 
 const exercises: Exercise[] = [
   {
