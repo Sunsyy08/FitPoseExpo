@@ -1,3 +1,4 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -83,13 +84,46 @@ export default function HomeScreen() {
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.logoContainer}>
-            <View style={styles.logoGlow} />
-            <View style={styles.logo}>
+            <LinearGradient
+              colors={['#06b6d4', '#3b82f6']}
+              style={styles.logoGlow}
+            />
+            <LinearGradient
+              colors={['#06b6d4', '#3b82f6']}
+              style={styles.logo}
+            >
               <Text style={styles.logoIcon}>⚡</Text>
-            </View>
+            </LinearGradient>
           </View>
           <View style={styles.headerTextContainer}>
-            <Text style={styles.title}>AI FITNESS COACH</Text>
+            <View style={styles.titleWrapper}>
+              <LinearGradient
+                colors={['#22d3ee', '#06b6d4', '#3b82f6']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.titleGradient}
+              >
+                <Text style={styles.title}>AI FITNESS</Text>
+              </LinearGradient>
+              <View style={styles.titleShadow}>
+                <Text style={[styles.title, styles.titleShadowText]}>AI FITNESS</Text>
+              </View>
+            </View>
+            
+            <View style={styles.titleWrapper}>
+              <LinearGradient
+                colors={['#22d3ee', '#06b6d4', '#3b82f6']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.titleGradient}
+              >
+                <Text style={styles.title}>COACH</Text>
+              </LinearGradient>
+              <View style={styles.titleShadow}>
+                <Text style={[styles.title, styles.titleShadowText]}>COACH</Text>
+              </View>
+            </View>
+
             <Text style={styles.subtitle}>AI 기반 실시간 자세 분석 시스템</Text>
           </View>
         </View>
@@ -102,7 +136,7 @@ export default function HomeScreen() {
           </View>
           <View style={styles.statusItem}>
             <Text style={styles.statusIcon}>🎯</Text>
-            <Text style={styles.statusSubtext}>정확도 99.8%</Text>
+            <Text style={styles.statusSubtext}>정확도 9.8%</Text>
           </View>
         </View>
       </View>
@@ -200,15 +234,13 @@ const styles = StyleSheet.create({
   logoGlow: {
     position: 'absolute',
     inset: 0,
-    backgroundColor: '#06b6d4',
-    borderRadius: 16,
-    opacity: 0.5,
-    transform: [{ scale: 1.2 }],
+    borderRadius: 20,
+    opacity: 0.4,
+    transform: [{ scale: 1.3 }],
   },
   logo: {
-    backgroundColor: '#06b6d4',
-    padding: 12,
-    borderRadius: 16,
+    padding: 14,
+    borderRadius: 20,
   },
   logoIcon: {
     fontSize: 32,
@@ -216,16 +248,39 @@ const styles = StyleSheet.create({
   headerTextContainer: {
     flex: 1,
   },
+  titleWrapper: {
+    position: 'relative',
+    marginBottom: 2,
+  },
+  titleGradient: {
+    alignSelf: 'flex-start',
+    borderRadius: 4,
+  },
+  titleShadow: {
+    position: 'absolute',
+    top: 2,
+    left: 2,
+    opacity: 0.3,
+    zIndex: -1,
+  },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#06b6d4',
-    marginBottom: 4,
-    letterSpacing: 1,
+    fontSize: 32,
+    fontWeight: '900',
+    color: '#fff',
+    letterSpacing: 2,
+    textShadowColor: 'rgba(6, 182, 212, 0.5)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 8,
+  },
+  titleShadowText: {
+    color: '#000',
+    textShadowColor: 'transparent',
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#9ca3af',
+    marginTop: 8,
+    letterSpacing: 0.5,
   },
   statusBar: {
     flexDirection: 'row',

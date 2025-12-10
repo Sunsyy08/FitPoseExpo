@@ -1,19 +1,20 @@
 import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from 'expo-router';
 import {
-    ArrowLeft,
-    Clock,
-    Target,
-    TrendingUp,
-    Trophy,
-    Zap,
+  ArrowLeft,
+  Clock,
+  Target,
+  TrendingUp,
+  Trophy,
+  Zap,
 } from "lucide-react-native";
 import React from "react";
 import {
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 // 🔥 네가 직접 props로 넘기는 구조 그대로 반영
@@ -41,6 +42,17 @@ export default function WorkoutHistory({ history = [],   // ← undefined 방지
       plank: 'PLANK',
     };
     return names[type] || type;
+  };
+
+   const router = useRouter();
+  
+  // onBack이 없으면 router.back() 사용
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+    } else {
+      router.back();
+    }
   };
 
   const getExerciseColors = (type: string): [string, string] => {
@@ -114,7 +126,7 @@ export default function WorkoutHistory({ history = [],   // ← undefined 방지
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity
-            onPress={onBack}
+            onPress={handleBack}
             style={styles.backButton}
             activeOpacity={0.7}
           >

@@ -440,15 +440,15 @@ const styles = StyleSheet.create({
   },
   exerciseTitleEn: {
     color: "#fff",
-    fontSize: 18,
-    fontWeight: "700",
-    letterSpacing: 1,
+    fontSize: 24,
+    fontWeight: "900",
+    letterSpacing: 2,
   },
   exerciseTitleKo: {
     color: "#9ca3af",
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: "500",
-    marginTop: 1,
+    marginTop: 4,
   },
   statsPanel: {
     position: 'absolute',
@@ -542,10 +542,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   pauseButton: {
-    backgroundColor: '#f59e0b',
+    backgroundColor: '#18181b',
+    borderWidth: 1,
+    borderColor: '#3f3f46',
   },
   completeButton: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: '#10b981',
   },
   controlButtonText: {
     color: '#fff',

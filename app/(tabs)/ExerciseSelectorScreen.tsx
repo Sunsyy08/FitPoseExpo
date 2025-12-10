@@ -1,5 +1,5 @@
 import { LinearGradient } from "expo-linear-gradient";
-import { useRouter } from "expo-router"; // ★ 추가
+import { useRouter } from "expo-router";
 import { Play, Target, TrendingUp, Zap } from "lucide-react-native";
 import React from "react";
 import {
@@ -49,7 +49,7 @@ const exercises = [
 ];
 
 export default function ExerciseSelector({ onSelect }: Props) {
-  const router = useRouter(); // ★ 추가
+  const router = useRouter();
 
   return (
     <ScrollView style={styles.container}>
@@ -64,7 +64,8 @@ export default function ExerciseSelector({ onSelect }: Props) {
           </LinearGradient>
 
           <View>
-            <Text style={styles.title}>AI FITNESS COACH</Text>
+            <Text style={styles.title}>AI FITNESS</Text>
+            <Text style={styles.title}>COACH</Text>
             <Text style={styles.subtitle}>AI 기반 실시간 자세 분석 시스템</Text>
           </View>
         </View>
@@ -124,7 +125,7 @@ export default function ExerciseSelector({ onSelect }: Props) {
               </View>
             </View>
 
-            {/* ★ 운동 시작 버튼 */}
+            {/* 운동 시작 버튼 */}
             <TouchableOpacity
               style={styles.startBtn}
               onPress={() => {
@@ -299,7 +300,6 @@ const styles = StyleSheet.create({
     color: "#6b7280",
   },
 
-  /* 🔥 추가된 운동 시작 버튼 */
   startBtn: {
     alignItems: "center",
     justifyContent: "center",
