@@ -205,10 +205,16 @@ export default function PoseDetectorScreen() {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const getExerciseName = () => {
-    if (exercise === 'squat') return '🏋️ 스쿼트';
-    if (exercise === 'pushup') return '💪 푸시업';
-    return '🧘 플랭크';
+  const getExerciseInfo = () => {
+    if (exercise === 'squat') return { en: 'SQUAT', ko: '스쿼트' };
+    if (exercise === 'pushup') return { en: 'PUSH UP', ko: '푸시업' };
+    return { en: 'PLANK', ko: '플랭크' };
+  };
+
+  const handleComplete = () => {
+    setIsActive(false);
+    // 여기에 완료 로직 추가 (예: 결과 화면으로 이동)
+    router.back();
   };
 
   // 권한 체크
@@ -232,6 +238,8 @@ export default function PoseDetectorScreen() {
       </View>
     );
   }
+
+  const exerciseInfo = getExerciseInfo();
 
   return (
     <View style={styles.container}>
@@ -258,31 +266,17 @@ export default function PoseDetectorScreen() {
         </View>
       )}
 
-      {/* Skia Canvas - 스켈레톤 */}
-      {isActive && !isModelLoading && (
-        <Canvas style={StyleSheet.absoluteFill} pointerEvents="none">
-          {generateMockKeypoints().map((kp, idx) => (
-            <Circle key={idx} cx={kp.x} cy={kp.y} r={6} color="#3b82f6" />
-          ))}
-
-          {connections.map(([a, b], idx) => {
-            const k1 = generateMockKeypoints().find(k => k.name === a);
-            const k2 = generateMockKeypoints().find(k => k.name === b);
-            if (!k1 || !k2) return null;
-            const path = Skia.Path.Make();
-            path.moveTo(k1.x, k1.y);
-            path.lineTo(k2.x, k2.y);
-            return <Path key={idx} path={path} color="#06b6d4" style="stroke" strokeWidth={4} />;
-          })}
-        </Canvas>
-      )}
+      {/* Skia Canvas - 스켈레톤 (제거됨) */}
 
       {/* 상단 헤더 */}
       <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backButton}>
-          <Text style={styles.backButtonText}>← 뒤로</Text>
+        <Pressable onPress={() => router.back()} style={styles.closeButton}>
+          <Text style={styles.closeButtonText}>✕</Text>
         </Pressable>
-        <Text style={styles.exerciseTitle}>{getExerciseName()}</Text>
+        <View style={styles.exerciseTitleContainer}>
+          <Text style={styles.exerciseTitleEn}>{exerciseInfo.en}</Text>
+          <Text style={styles.exerciseTitleKo}>{exerciseInfo.ko}</Text>
+        </View>
       </View>
 
       {/* 통계 패널 */}
@@ -291,7 +285,7 @@ export default function PoseDetectorScreen() {
           {/* 시간 */}
           <View style={styles.statCard}>
             <Text style={styles.statLabel}>시간</Text>
-            <Text style={styles.statValue}>{formatTime(elapsedTime)}</Text>
+            <Text style={styles.statValueTime}>{formatTime(elapsedTime)}</Text>
           </View>
 
           {/* 횟수 */}
@@ -322,15 +316,30 @@ export default function PoseDetectorScreen() {
 
       {/* 하단 컨트롤 */}
       <View style={styles.controls}>
-        <Pressable
-          style={[styles.controlButton, isActive ? styles.stopButton : styles.startButton]}
-          onPress={() => setIsActive(!isActive)}
-          disabled={isModelLoading}
-        >
-          <Text style={styles.controlButtonText}>
-            {isActive ? '⏸ 일시정지' : '▶ 시작하기'}
-          </Text>
-        </Pressable>
+        {!isActive ? (
+          <Pressable
+            style={styles.startButton}
+            onPress={() => setIsActive(true)}
+            disabled={isModelLoading}
+          >
+            <Text style={styles.controlButtonText}>▶ 시작하기</Text>
+          </Pressable>
+        ) : (
+          <View style={styles.controlButtons}>
+            <Pressable
+              style={[styles.controlButton, styles.pauseButton]}
+              onPress={() => setIsActive(false)}
+            >
+              <Text style={styles.controlButtonText}>⏸ 일시정지</Text>
+            </Pressable>
+            <Pressable
+              style={[styles.controlButton, styles.completeButton]}
+              onPress={handleComplete}
+            >
+              <Text style={styles.controlButtonText}>✓ 완료</Text>
+            </Pressable>
+          </View>
+        )}
       </View>
     </View>
   );
@@ -383,58 +392,67 @@ const styles = StyleSheet.create({
   },
   readyBadge: {
     position: 'absolute',
-    top: 100,
+    top: 110,
     alignSelf: 'center',
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(24, 24, 27, 0.8)',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 24,
+    backgroundColor: 'rgba(24, 24, 27, 0.7)',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
     borderWidth: 1,
     borderColor: '#3f3f46',
     zIndex: 10,
   },
   readyIcon: {
-    fontSize: 20,
-    marginRight: 12,
+    fontSize: 16,
+    marginRight: 8,
   },
   readyText: {
     color: '#d1d5db',
-    fontSize: 16,
+    fontSize: 14,
   },
   header: {
     position: "absolute",
     top: 50,
-    left: 0,
-    right: 0,
+    left: 20,
+    right: 20,
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 20,
+    justifyContent: "space-between",
     zIndex: 10,
   },
-  backButton: {
-    backgroundColor: "rgba(0,0,0,0.6)",
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+  closeButton: {
+    width: 40,
+    height: 40,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  backButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  exerciseTitle: {
+  closeButtonText: {
     color: "#fff",
     fontSize: 20,
-    fontWeight: "bold",
-    marginLeft: 16,
+    fontWeight: "300",
+  },
+  exerciseTitleContainer: {
+    alignItems: 'center',
+  },
+  exerciseTitleEn: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "700",
+    letterSpacing: 1,
+  },
+  exerciseTitleKo: {
+    color: "#9ca3af",
+    fontSize: 12,
+    fontWeight: "500",
+    marginTop: 1,
   },
   statsPanel: {
     position: 'absolute',
-    top: 120,
+    top: 110,
     left: 20,
     right: 20,
     flexDirection: 'row',
@@ -443,13 +461,15 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: 'rgba(24, 24, 27, 0.8)',
-    padding: 16,
-    borderRadius: 16,
-    marginHorizontal: 4,
+    backgroundColor: 'rgba(24, 24, 27, 0.7)',
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    borderRadius: 12,
+    marginHorizontal: 3,
     borderWidth: 1,
     borderColor: '#3f3f46',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   statCardGood: {
     borderColor: '#10b981',
@@ -466,7 +486,12 @@ const styles = StyleSheet.create({
   },
   statValue: {
     color: '#fff',
-    fontSize: 24,
+    fontSize: 28,
+    fontWeight: 'bold',
+  },
+  statValueTime: {
+    color: '#fff',
+    fontSize: 22,
     fontWeight: 'bold',
   },
   feedbackContainer: {
@@ -500,16 +525,27 @@ const styles = StyleSheet.create({
     right: 20,
     zIndex: 10,
   },
+  controlButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
   controlButton: {
+    flex: 1,
     paddingVertical: 18,
     borderRadius: 16,
     alignItems: 'center',
   },
   startButton: {
     backgroundColor: '#10b981',
+    paddingVertical: 18,
+    borderRadius: 16,
+    alignItems: 'center',
   },
-  stopButton: {
-    backgroundColor: '#ef4444',
+  pauseButton: {
+    backgroundColor: '#f59e0b',
+  },
+  completeButton: {
+    backgroundColor: '#3b82f6',
   },
   controlButtonText: {
     color: '#fff',

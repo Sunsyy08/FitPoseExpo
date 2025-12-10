@@ -1,5 +1,6 @@
 import { LinearGradient } from "expo-linear-gradient";
-import { Target, TrendingUp, Zap } from "lucide-react-native";
+import { useRouter } from "expo-router"; // ★ 추가
+import { Play, Target, TrendingUp, Zap } from "lucide-react-native";
 import React from "react";
 import {
   ScrollView,
@@ -8,7 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { ExerciseType } from "../types/exercise"; // ✔ 올바른 경로로 변경
+import { ExerciseType } from "../types/exercise";
 
 interface Props {
   onSelect: (exercise: ExerciseType) => void;
@@ -48,6 +49,8 @@ const exercises = [
 ];
 
 export default function ExerciseSelector({ onSelect }: Props) {
+  const router = useRouter(); // ★ 추가
+
   return (
     <ScrollView style={styles.container}>
       {/* Header */}
@@ -86,30 +89,25 @@ export default function ExerciseSelector({ onSelect }: Props) {
         <View style={styles.line} />
       </View>
 
-      {/* Exercise Cards */}
+      {/* Cards */}
       {exercises.map((ex) => (
         <TouchableOpacity
           key={ex.type}
-          onPress={() => onSelect(ex.type)}
-          style={styles.card}
           activeOpacity={0.85}
+          style={styles.card}
         >
-            <LinearGradient
-              colors={ex.bgGradient as [string, string]} // 두 개 이상이면 그 이상도 가능
-              style={styles.cardBg}
-            />
+          <LinearGradient
+            colors={ex.bgGradient as [string, string]}
+            style={styles.cardBg}
+          />
 
           <View style={styles.cardOverlay} />
 
           <View style={styles.cardContent}>
             <View style={styles.cardLeft}>
-              {/* EN Title + Difficulty */}
               <View style={styles.cardTop}>
                 <Text
-                  style={[
-                    styles.cardEnTitle,
-                    { color: ex.gradient[1] },
-                  ]}
+                  style={[styles.cardEnTitle, { color: ex.gradient[1] }]}
                 >
                   {ex.nameEn}
                 </Text>
@@ -118,7 +116,6 @@ export default function ExerciseSelector({ onSelect }: Props) {
               </View>
 
               <Text style={styles.korTitle}>{ex.name}</Text>
-
               <Text style={styles.description}>{ex.description}</Text>
 
               <View style={styles.muscleRow}>
@@ -127,12 +124,24 @@ export default function ExerciseSelector({ onSelect }: Props) {
               </View>
             </View>
 
-            {/* Arrow Button */}
-            <LinearGradient
-              colors={ex.bgGradient as [string, string]} // 두 개 이상이면 그 이상도 가능
-              style={styles.cardBg}
-            />
-
+            {/* ★ 운동 시작 버튼 */}
+            <TouchableOpacity
+              style={styles.startBtn}
+              onPress={() => {
+                router.push({
+                  pathname: "/PoseDetectorScreen",
+                  params: { exercise: ex.type }
+                });
+              }}
+            >
+              <LinearGradient
+                colors={ex.gradient as [string, string, string]}
+                style={styles.startBtnBg}
+              >
+                <Play size={26} color="white" />
+              </LinearGradient>
+              <Text style={styles.startText}>시작</Text>
+            </TouchableOpacity>
           </View>
         </TouchableOpacity>
       ))}
@@ -164,7 +173,6 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
 
-  /* Header */
   header: {
     marginTop: 40,
     marginBottom: 40,
@@ -188,6 +196,7 @@ const styles = StyleSheet.create({
     color: "#9ca3af",
     marginTop: 4,
   },
+
   statusBox: {
     flexDirection: "row",
     alignItems: "center",
@@ -217,7 +226,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
 
-  /* Section title */
   sectionTitleWrapper: {
     flexDirection: "row",
     alignItems: "center",
@@ -235,7 +243,6 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
   },
 
-  /* Cards */
   card: {
     borderRadius: 24,
     overflow: "hidden",
@@ -291,17 +298,26 @@ const styles = StyleSheet.create({
   muscles: {
     color: "#6b7280",
   },
-  arrowBox: {
-    padding: 24,
-    borderRadius: 16,
-    marginLeft: 16,
+
+  /* 🔥 추가된 운동 시작 버튼 */
+  startBtn: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: 20,
   },
-  arrow: {
-    color: "white",
-    fontSize: 32,
+  startBtnBg: {
+    width: 58,
+    height: 58,
+    borderRadius: 30,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 6,
+  },
+  startText: {
+    color: "#e5e7eb",
+    fontSize: 12,
   },
 
-  /* Features */
   featuresWrapper: {
     flexDirection: "row",
     flexWrap: "wrap",
