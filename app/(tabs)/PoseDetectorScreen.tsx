@@ -1,9 +1,8 @@
 import { Canvas, Circle, Path, Skia } from "@shopify/react-native-skia";
-import { CameraView, useCameraPermissions } from "expo-camera";
+import { Camera, useCameraPermissions } from "expo-camera";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
-
 declare module '@shopify/react-native-skia';
 
 interface AnalysisResult {
@@ -17,6 +16,7 @@ export default function PoseDetectorScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const exercise = (params.exercise as string) || "squat";
+  const cameraRef = useRef<Camera>(null);
 
   const [permission, requestPermission] = useCameraPermissions();
   const [isModelLoading, setIsModelLoading] = useState(true);
@@ -186,18 +186,84 @@ export default function PoseDetectorScreen() {
       isCorrectPosition: score >= 70,
     });
   };
+  const [base64Image, setBase64Image] = useState<string | null>(null);
+
+
+
+
+  const captureFrame = async () => {
+    if (!cameraRef.current) return null;
+
+    try {
+      const photo = await cameraRef.current.takePictureAsync({
+        base64: true,
+        quality: 0.5,
+        skipProcessing: true,   // Android에서 에러 방지
+      });
+
+      return photo.base64 ?? null;
+    } catch (err) {
+      console.log("Camera capture error:", err);
+      return null;
+    }
+  };
+
+
+  // 백엔드로 키포인트 전송하는 함수
+  const sendToServer = async (keypoints: any[]) => {
+    try {
+      const base64 = await captureFrame();
+      if (!base64) {
+        console.log("No image captured");
+        return;
+      }
+
+      const res = await fetch("http://172.30.0.72:8000/analyze", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          image: base64,
+          exercise: exercise,
+          keypoints: keypoints,
+        }),
+      });
+
+      if (!res.ok) {
+        console.log("Server error:", res.status);
+        return;
+      }
+
+      const data = await res.json();
+
+      setAnalysis({
+        score: data.score,
+        feedback: data.feedback,
+        repCount: data.rep_count,
+        isCorrectPosition: data.is_correct,
+      });
+    } catch (e) {
+      console.log("API request failed:", e);
+    }
+  };
 
   // 주기적으로 자세 분석
   useEffect(() => {
     if (!isActive || isModelLoading) return;
 
-    const interval = setInterval(() => {
+    const interval = setInterval(async () => {
+      // 1) 실제 키포인트(또는 일단 mock)가져오기
       const keypoints = generateMockKeypoints();
-      analyzePose(keypoints);
-    }, 100);
+
+      // 2) 백엔드 서버로 보내기
+      await sendToServer(keypoints);
+
+    }, 300);
 
     return () => clearInterval(interval);
   }, [isActive, isModelLoading, exercise]);
+
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -241,10 +307,19 @@ export default function PoseDetectorScreen() {
 
   const exerciseInfo = getExerciseInfo();
 
+
   return (
     <View style={styles.container}>
       {/* 카메라 뷰 */}
-      <CameraView style={StyleSheet.absoluteFill} facing="front" />
+      <Camera
+        ref={cameraRef}
+        style={StyleSheet.absoluteFill}
+        type={CameraType.front}
+      />
+
+
+
+
 
       {/* AI 로딩 오버레이 */}
       {isModelLoading && (
@@ -345,19 +420,20 @@ export default function PoseDetectorScreen() {
   );
 }
 
+
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "black" },
-  center: { 
-    flex: 1, 
-    justifyContent: "center", 
-    alignItems: "center", 
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: "black",
     padding: 20,
   },
   loadingOverlay: {
     position: "absolute",
     top: 0, left: 0, right: 0, bottom: 0,
-    justifyContent: "center", 
+    justifyContent: "center",
     alignItems: "center",
     backgroundColor: "rgba(0,0,0,0.9)",
     zIndex: 10,
